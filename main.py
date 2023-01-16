@@ -1,17 +1,18 @@
-import pygame
-import sys
 import os
 import random
+import sys
 
+import pygame
 
 SIZE = (1280, 720)
 FPS = 30
 G = 1
 
 
+
 class Background(pygame.sprite.Sprite):
     def __init__(self, image_file, location):
-        pygame.sprite.Sprite.__init__(self)  #call Sprite initializer
+        pygame.sprite.Sprite.__init__(self)  # call Sprite initializer
         self.image = pygame.image.load(image_file)
         self.rect = self.image.get_rect()
         self.rect.left, self.rect.top = location
@@ -23,7 +24,7 @@ def terminate():
 
 
 def load_image(name, colorkey=None):
-    fullname = os.path.join('data', name)
+    fullname = os.path.join('assets', name)
     # если файл не существует, то выходим
     if not os.path.isfile(fullname):
         print(f"File named '{fullname}' is not found")
@@ -42,18 +43,19 @@ def load_image(name, colorkey=None):
 class Fruit(pygame.sprite.Sprite):
     def __init__(self, *group, image_name):
         super().__init__(*group)
-        path = os.path.join("assets", image_name + '.png')
-        self.image = pygame.image.load(path)
+        # path = os.path.join("assets", image_name + '.png')
+        self.image = pygame.image.load(os.path.join("assets", image_name + '_full' + '.png'))
+        self.image_half = pygame.image.load(os.path.join("assets", image_name + '_half' + '.png'))
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(1000)
         self.rect.y = random.randrange(500)
+
     def update(self, *args):
-        self.rect = self.rect.move(random.randrange(3) - 1, 
+        self.rect = self.rect.move(random.randrange(3) - 1,
                                    random.randrange(3) - 1)
         if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
                 self.rect.collidepoint(args[0].pos):
-            self.image = self.image_boom
-
+            self.image = self.image_half
 
 
 def main():
@@ -62,11 +64,10 @@ def main():
     size = width, height = SIZE
     screen = pygame.display.set_mode(size)
 
-    BackGround = Background('assets/background.png', [0,0])
-    screen.blit(BackGround.image, BackGround.rect)
+    BackGround = Background('assets/background.png', [0, 0])
 
     all_sprites = pygame.sprite.Group()
-    Fruit(all_sprites, image_name='apple_full')
+    Fruit(all_sprites, image_name='apple')
 
     running = True
     while running:
@@ -74,8 +75,10 @@ def main():
             if event.type == pygame.QUIT:
                 terminate()
 
+        all_sprites.update(event)
+
+        screen.blit(BackGround.image, BackGround.rect)
         all_sprites.draw(screen)
-        all_sprites.update()
 
         # screen.blit(BackGround.image, BackGround.rect)
         pygame.display.update()
