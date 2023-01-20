@@ -74,7 +74,7 @@ def main():
     size = width, height = SIZE
     screen = pygame.display.set_mode(size)
 
-    BackGround = Background('assets/background.png', [0, 0])
+    BackGround = Background('assets/background_720.png', [0, 0])
 
     all_sprites = pygame.sprite.Group()
     Fruit(all_sprites, image_name='apple')
