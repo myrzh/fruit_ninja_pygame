@@ -9,7 +9,6 @@ FPS = 30
 G = 1
 
 
-
 class Background(pygame.sprite.Sprite):
     def __init__(self, image_file, location):
         pygame.sprite.Sprite.__init__(self)  # call Sprite initializer
@@ -46,16 +45,25 @@ class Fruit(pygame.sprite.Sprite):
         # path = os.path.join("assets", image_name + '.png')
         self.image = pygame.image.load(os.path.join("assets", image_name + '_full' + '.png'))
         self.image_half = pygame.image.load(os.path.join("assets", image_name + '_half' + '.png'))
+        self.clicked = False
         self.rect = self.image.get_rect()
-        self.rect.x = random.randrange(1000)
-        self.rect.y = random.randrange(500)
+        self.rect.x = 0
+        self.rect.y = random.randrange(SIZE[1] // 3, 2 * (SIZE[1] // 3))
+        self.speed_hor = 10
+        self.speed_ver = 5
+
 
     def update(self, *args):
-        self.rect = self.rect.move(random.randrange(3) - 1,
-                                   random.randrange(3) - 1)
+        if not self.clicked:
+            self.rect.x += self.speed_hor
+        else:
+            self.rect.y += self.speed_ver
+        # self.rect.y += self.speed_ver
+        # self.speed_ver += G
         if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
                 self.rect.collidepoint(args[0].pos):
             self.image = self.image_half
+            self.clicked = True
 
 
 def main():
