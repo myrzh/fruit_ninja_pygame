@@ -48,18 +48,20 @@ class Fruit(pygame.sprite.Sprite):
         self.clicked = False
         self.rect = self.image.get_rect()
         self.rect.x = 0
-        self.rect.y = random.randrange(SIZE[1] // 3, 2 * (SIZE[1] // 3))
-        self.speed_hor = 10
-        self.speed_ver = 5
+        self.rect.y = 800
+        self.speed_hor = 17
+        self.a_coeff = random.uniform(0.00008, 0.02)
+        self.b_coeff = random.randrange(250, 1000)
+        self.c_coeff = random.randrange(50, 100)
+        # self.speed_ver = 5
+
+    def parabola(self, x):
+        return self.a_coeff * (x - self.b_coeff) ** 2 + self.c_coeff
 
 
     def update(self, *args):
-        if not self.clicked:
-            self.rect.x += self.speed_hor
-        else:
-            self.rect.y += self.speed_ver
-        # self.rect.y += self.speed_ver
-        # self.speed_ver += G
+        self.rect.x += self.speed_hor
+        self.rect.y = self.parabola(self.rect.x)
         if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
                 self.rect.collidepoint(args[0].pos):
             self.image = self.image_half
@@ -76,6 +78,8 @@ def main():
 
     all_sprites = pygame.sprite.Group()
     Fruit(all_sprites, image_name='apple')
+    # for _ in range(50):
+    #     Fruit(all_sprites, image_name='apple')
 
     running = True
     while running:
