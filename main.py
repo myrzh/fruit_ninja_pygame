@@ -2,6 +2,7 @@ import pygame
 import os
 import random
 import sys
+import time
 
 
 SIZE = (1280, 720) # unchangable
@@ -14,6 +15,9 @@ FRUIT_NAMES = ['apple',
                'orange',
                'strawberry',
                'watermelon']
+SPAWN_RATE = 2000 # ms
+FRUIT_SIDE = 180 # pixels
+GRAVITY = 1
 
 
 class Background(pygame.sprite.Sprite):
@@ -52,40 +56,86 @@ class Fruit(pygame.sprite.Sprite):
     """Fruit sprite definition"""
     def __init__(self, *group, image_name):
         super().__init__(*group)
-        # path = os.path.join("assets", image_name + '.png')
+
         self.image = load_image(image_name + '_full' + '.png')
+        self.image = pygame.transform.scale(self.image, (FRUIT_SIDE, FRUIT_SIDE))
         self.image_half = load_image(image_name + '_half' + '.png')
-        self.clicked = False
+        self.image_half = pygame.transform.scale(self.image_half, (FRUIT_SIDE, FRUIT_SIDE))
+        self.workaround_group = group
+        
         self.rect = self.image.get_rect()
         self.rect.x = 0
         self.rect.y = 800
+
         self.speed_hor = 17
-        self.a_coeff = random.uniform(0.00008, 0.02)
+        self.a_coeff = random.uniform(0.0001, 0.02)
         self.b_coeff = random.randrange(250, 1000)
-        self.c_coeff = random.randrange(50, 100)
+        self.c_coeff = random.randrange(50, 300)
+        self.hitted = False
+        self.hit_x_pos = 0
         # self.speed_ver = 5
 
     def parabola(self, x_arg):
         """Generate parabola using mathematical function"""
         return self.a_coeff * (x_arg - self.b_coeff) ** 2 + self.c_coeff
 
+    def create_particles(self, position):
+        """Generate particles with random size and speed"""
+        particle_count = 20
+        numbers = range(-5, 6)
+        for _ in range(particle_count):
+            Particle(position, random.choice(numbers), random.choice(numbers), *self.workaround_group)
+
+
     def update(self, *args):
         """Update fruit sprite pos and type (sliced/not sliced)"""
         self.rect.x += self.speed_hor
         self.rect.y = self.parabola(self.rect.x)
-        if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
-                self.rect.collidepoint(args[0].pos):
+        # if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
+        #         self.rect.collidepoint(args[0].pos):
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            if not self.hitted:
+                self.hit_x_pos = self.rect.x
+            self.hitted = True
             self.image = self.image_half
-            self.clicked = True
+            if self.rect.x - self.hit_x_pos < 150:
+                self.create_particles((self.rect.x + (FRUIT_SIDE // 2), self.rect.y + (FRUIT_SIDE // 2)))
             return True
         return False
 
 
+screen_rect = (0, 0, SIZE[0], SIZE[1])
+
+class Particle(pygame.sprite.Sprite):
+    """Particle sprite definition"""
+    def __init__(self, pos, dx, dy, *group):
+        super().__init__(*group)
+        self.fire = [load_image("particle.png")]
+        for scale in (5, 10, 20):
+            self.fire.append(pygame.transform.scale(self.fire[0], (scale, scale)))
+        self.image = random.choice(self.fire)
+        self.rect = self.image.get_rect()
+
+        self.velocity = [dx, dy]
+        self.rect.x, self.rect.y = pos
+
+        self.gravity = GRAVITY
+
+    def update(self, event):
+        """Update particle speed and pos values"""
+        self.velocity[1] += self.gravity
+        self.rect.x += self.velocity[0]
+        self.rect.y += self.velocity[1]
+        if not self.rect.colliderect(screen_rect):
+            self.kill()
+
+
+
 def main():
+    """Define main game behavior"""
     clock = pygame.time.Clock()
     pygame.init()
-    size = width, height = SIZE
-    screen = pygame.display.set_mode(size)
+    screen = pygame.display.set_mode(SIZE)
     wooden_background = Background('assets/background_720.png', [0, 0])
 
     hits = 0
@@ -94,28 +144,32 @@ def main():
 
     all_sprites = pygame.sprite.Group()
     Fruit(all_sprites, image_name=random.choice(FRUIT_NAMES))
-    # for _ in range(50):
-    #     Fruit(all_sprites, image_name='apple')
+    
+    FRUITEVENT = pygame.USEREVENT + 1
+    pygame.time.set_timer(FRUITEVENT, SPAWN_RATE)
 
     running = True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
+            if event.type == FRUITEVENT:
+                Fruit(all_sprites, image_name=random.choice(FRUIT_NAMES))
 
         screen.blit(wooden_background.image, wooden_background.rect)
         screen.blit(score_text, (50, 50))
 
         hit_on_update = all_sprites.update(event)
-        print(hit_on_update)
+        # print(hit_on_update)
         if hit_on_update:
             # print('hit!')
             hits += 1
             score_text = score_font.render(str(hits), True, 'white')
         
+        clock.tick(FPS)
         all_sprites.draw(screen)
         pygame.display.update()
-        clock.tick(FPS)
+        
 
 
 if __name__ == '__main__':
@@ -123,8 +177,4 @@ if __name__ == '__main__':
 
 
 # TODO:
-# -- тыки чтоб расхерачить пололам штука (далее -- разрыв штука) (почти уже)
-# -- много штука
-# -- траектория падения штука разрыв
 # -- счетчик разрыв штука
-# -- партиклы от штука когда разрыв
