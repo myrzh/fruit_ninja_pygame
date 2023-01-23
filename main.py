@@ -2,19 +2,11 @@ import pygame
 import os
 import random
 import sys
-import time
+import sqlite3
 
 
 SIZE = (1280, 720) # unchangable
 FPS = 30
-FRUIT_NAMES = ['apple',
-               'avocado',
-               'egg',
-               'mangosteen',
-               'onion',
-               'orange',
-               'strawberry',
-               'watermelon']
 SPAWN_RATE = 2000 # ms
 FRUIT_SIDE = 180 # pixels
 GRAVITY = 1
@@ -52,14 +44,24 @@ def load_image(name, colorkey=None):
     return image
 
 
+def get_fruits(db_path):
+    fruits_db_con = sqlite3.connect(db_path)
+    cur = fruits_db_con.cursor()
+    result = cur.execute("SELECT filename_full, filename_half FROM fruits_table").fetchall()
+    FRUIT_NAMES1 = result
+    return FRUIT_NAMES1
+
+FRUIT_NAMES = get_fruits('assets/fruits.db')
+
+
 class Fruit(pygame.sprite.Sprite):
     """Fruit sprite definition"""
-    def __init__(self, *group, image_name):
+    def __init__(self, *group, filename_full, filename_half):
         super().__init__(*group)
 
-        self.image = load_image(image_name + '_full' + '.png')
+        self.image = load_image(filename_full)
         self.image = pygame.transform.scale(self.image, (FRUIT_SIDE, FRUIT_SIDE))
-        self.image_half = load_image(image_name + '_half' + '.png')
+        self.image_half = load_image(filename_half)
         self.image_half = pygame.transform.scale(self.image_half, (FRUIT_SIDE, FRUIT_SIDE))
         self.workaround_group = group
         
@@ -133,6 +135,7 @@ class Particle(pygame.sprite.Sprite):
 
 def main():
     """Define main game behavior"""
+
     clock = pygame.time.Clock()
     pygame.init()
     screen = pygame.display.set_mode(SIZE)
@@ -143,7 +146,6 @@ def main():
     score_text = score_font.render(str(hits), True, "white")
 
     all_sprites = pygame.sprite.Group()
-    Fruit(all_sprites, image_name=random.choice(FRUIT_NAMES))
     
     FRUITEVENT = pygame.USEREVENT + 1
     pygame.time.set_timer(FRUITEVENT, SPAWN_RATE)
@@ -154,7 +156,7 @@ def main():
             if event.type == pygame.QUIT:
                 terminate()
             if event.type == FRUITEVENT:
-                Fruit(all_sprites, image_name=random.choice(FRUIT_NAMES))
+                Fruit(all_sprites, filename_full=random.choice(FRUIT_NAMES)[0], filename_half=random.choice(FRUIT_NAMES)[1])
 
         screen.blit(wooden_background.image, wooden_background.rect)
         screen.blit(score_text, (50, 50))
