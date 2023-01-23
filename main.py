@@ -131,7 +131,6 @@ class Particle(pygame.sprite.Sprite):
             self.kill()
 
 
-
 def main():
     """Define main game behavior"""
 
