@@ -48,8 +48,7 @@ def get_fruits(db_path):
     fruits_db_con = sqlite3.connect(db_path)
     cur = fruits_db_con.cursor()
     result = cur.execute("SELECT filename_full, filename_half FROM fruits_table").fetchall()
-    FRUIT_NAMES1 = result
-    return FRUIT_NAMES1
+    return result
 
 FRUIT_NAMES = get_fruits('assets/fruits.db')
 
