@@ -159,6 +159,7 @@ class Particle(pygame.sprite.Sprite):
 
 def main():
     """Define main game behavior"""
+    pygame.display.set_caption('FruitNinjaPygame')
     clock = pygame.time.Clock()
     screen = pygame.display.set_mode(SIZE)
     wooden_background = Background('background_720.png', [0, 0])
