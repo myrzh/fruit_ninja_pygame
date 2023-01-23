@@ -10,6 +10,7 @@ FPS = 30
 SPAWN_RATE = 2000 # ms
 FRUIT_SIDE = 180 # pixels
 GRAVITY = 1
+SOUNDS_COUNT = 12
 
 
 class Background(pygame.sprite.Sprite):
@@ -42,6 +43,10 @@ def load_image(name, colorkey=None):
     else:
         image = image.convert_alpha()
     return image
+
+
+def load_random_sound():
+    return os.path.join('assets', 'sounds', str(random.randrange(1, SOUNDS_COUNT + 1)) + '.mp3')
 
 
 def get_fruits(db_path):
@@ -97,6 +102,9 @@ class Fruit(pygame.sprite.Sprite):
         #         self.rect.collidepoint(args[0].pos):
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             if not self.hitted:
+                sound_path = load_random_sound()
+                pygame.mixer.music.load(sound_path)
+                pygame.mixer.music.play()
                 self.hit_x_pos = self.rect.x
             self.hitted = True
             self.image = self.image_half
@@ -138,6 +146,7 @@ def main():
     pygame.init()
     screen = pygame.display.set_mode(SIZE)
     wooden_background = Background('background_720.png', [0, 0])
+    pygame.mixer.init()
 
     hits = 0
     score_font = pygame.font.Font(None, 72)
@@ -160,13 +169,7 @@ def main():
         screen.blit(wooden_background.image, wooden_background.rect)
         screen.blit(score_text, (50, 50))
 
-        hit_on_update = all_sprites.update(event)
-        # print(hit_on_update)
-        if hit_on_update:
-            # print('hit!')
-            hits += 1
-            score_text = score_font.render(str(hits), True, 'white')
-        
+        all_sprites.update(event)
         clock.tick(FPS)
         all_sprites.draw(screen)
         pygame.display.update()
