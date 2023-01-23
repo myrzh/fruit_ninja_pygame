@@ -45,6 +45,7 @@ def load_image(name, colorkey=None):
 
 
 def get_fruits(db_path):
+    """Get fruit names from database"""
     fruits_db_con = sqlite3.connect(db_path)
     cur = fruits_db_con.cursor()
     result = cur.execute("SELECT filename_full, filename_half FROM fruits_table").fetchall()
@@ -133,7 +134,6 @@ class Particle(pygame.sprite.Sprite):
 
 def main():
     """Define main game behavior"""
-
     clock = pygame.time.Clock()
     pygame.init()
     screen = pygame.display.set_mode(SIZE)
@@ -154,7 +154,8 @@ def main():
             if event.type == pygame.QUIT:
                 terminate()
             if event.type == FRUITEVENT:
-                Fruit(all_sprites, filename_full=random.choice(FRUIT_NAMES)[0], filename_half=random.choice(FRUIT_NAMES)[1])
+                fruit_tuple = random.choice(FRUIT_NAMES)
+                Fruit(all_sprites, filename_full=fruit_tuple[0], filename_half=fruit_tuple[1])
 
         screen.blit(wooden_background.image, wooden_background.rect)
         screen.blit(score_text, (50, 50))
