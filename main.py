@@ -16,7 +16,7 @@ class Background(pygame.sprite.Sprite):
     """Background sprite definiton"""
     def __init__(self, image_file, location):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load(image_file)
+        self.image = load_image(image_file)
         self.rect = self.image.get_rect()
         self.rect.left, self.rect.top = location
 
@@ -29,7 +29,7 @@ def terminate():
 
 def load_image(name, colorkey=None):
     """Load any image and convert it to alpha-channed if needed"""
-    fullname = os.path.join('assets', name)
+    fullname = os.path.join('assets', 'images', name)
     if not os.path.isfile(fullname):
         print(f"File named '{fullname}' is not found")
         sys.exit()
@@ -137,7 +137,7 @@ def main():
     clock = pygame.time.Clock()
     pygame.init()
     screen = pygame.display.set_mode(SIZE)
-    wooden_background = Background('assets/background_720.png', [0, 0])
+    wooden_background = Background('background_720.png', [0, 0])
 
     hits = 0
     score_font = pygame.font.Font(None, 72)
