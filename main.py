@@ -113,8 +113,7 @@ class Fruit(pygame.sprite.Sprite):
         """Update fruit sprite pos and type (sliced/not sliced)"""
         if self.rect.x > 2 * SIZE[0] // 3 and self.rect.y > 800:
             if not self.hitted:
-                pass
-                # update_score('zero')
+                update_score('zero')
             self.kill()
         self.rect.x += self.speed_hor
         self.rect.y = self.parabola(self.rect.x)
