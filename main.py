@@ -11,6 +11,11 @@ SPAWN_RATE = 2000 # ms
 FRUIT_SIDE = 180 # pixels
 GRAVITY = 1
 SOUNDS_COUNT = 12
+HITS = 0
+
+pygame.init()
+score_font = pygame.font.Font(None, 72)
+score_text = score_font.render(str(HITS), True, "white")
 
 
 class Background(pygame.sprite.Sprite):
@@ -59,6 +64,17 @@ def get_fruits(db_path):
 FRUIT_NAMES = get_fruits('assets/fruits.db')
 
 
+def update_score(arg):
+    """Update score func"""
+    global HITS
+    global score_text
+    if arg == 'increment':
+        HITS += 1
+    elif arg == 'zero':
+        HITS = 0
+    score_text = score_font.render(str(HITS), True, "white")
+
+
 class Fruit(pygame.sprite.Sprite):
     """Fruit sprite definition"""
     def __init__(self, *group, filename_full, filename_half):
@@ -80,7 +96,6 @@ class Fruit(pygame.sprite.Sprite):
         self.c_coeff = random.randrange(50, 300)
         self.hitted = False
         self.hit_x_pos = 0
-        # self.speed_ver = 5
 
     def parabola(self, x_arg):
         """Generate parabola using mathematical function"""
@@ -96,12 +111,16 @@ class Fruit(pygame.sprite.Sprite):
 
     def update(self, *args):
         """Update fruit sprite pos and type (sliced/not sliced)"""
+        if self.rect.x > 2 * SIZE[0] // 3 and self.rect.y > 800:
+            if not self.hitted:
+                pass
+                # update_score('zero')
+            self.kill()
         self.rect.x += self.speed_hor
         self.rect.y = self.parabola(self.rect.x)
-        # if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
-        #         self.rect.collidepoint(args[0].pos):
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             if not self.hitted:
+                update_score('increment')
                 sound_path = load_random_sound()
                 pygame.mixer.music.load(sound_path)
                 pygame.mixer.music.play()
@@ -110,7 +129,6 @@ class Fruit(pygame.sprite.Sprite):
             self.image = self.image_half
             if self.rect.x - self.hit_x_pos < 150:
                 self.create_particles((self.rect.x + (FRUIT_SIDE // 2), self.rect.y + (FRUIT_SIDE // 2)))
-            return True
         return False
 
 
@@ -143,14 +161,12 @@ class Particle(pygame.sprite.Sprite):
 def main():
     """Define main game behavior"""
     clock = pygame.time.Clock()
-    pygame.init()
     screen = pygame.display.set_mode(SIZE)
     wooden_background = Background('background_720.png', [0, 0])
-    pygame.mixer.init()
 
-    hits = 0
-    score_font = pygame.font.Font(None, 72)
-    score_text = score_font.render(str(hits), True, "white")
+    pygame.mixer.pre_init(frequency=48000, size=-16, channels=1, buffer=512)
+    pygame.mixer.init()
+    pygame.mixer.music.set_volume(0.7)
 
     all_sprites = pygame.sprite.Group()
     
@@ -177,7 +193,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-# TODO:
-# -- счетчик разрыв штука
